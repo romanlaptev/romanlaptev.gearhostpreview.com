@@ -2,7 +2,7 @@ window.onload = function(){
 	var webNotes = _notes();
 console.log( webNotes );	
 	webNotes.init();
-}//end load
+};//end load
 
 $(document).ready(function(){
 	$("input[type=file]").bootstrapFileInput();
@@ -38,8 +38,77 @@ var _notes = function ( opt ){
 				}, //end test
 				
 				{
+				"name" : "checkASPX",
+				"url" : "api/test.aspx",
+				"successMsg" : "test ASPX success, suppored by server <b>" + window.location.host + "</b>...",
+				"errorMsg" : "test ASPX failed, ASP.NET not suppored by server <b>" + window.location.host + "</b>...",
+				"callback" : function(res){
+					
+						_vars["supportASPX"] = false;
+						if( res[0] === "4" ){
+							
+							_vars["supportASPX"] = true;
+
+							var msg = this["successMsg"];
+							_log("<div class='alert alert-success'>" + msg + "</div>");
+						} else {
+							var msg = this["errorMsg"];
+							_log("<div class='alert alert-danger'>" + msg + "</div>");
+						}
+					}//end callback
+				}, //end test
+				
+				{
+				"name" : "checkJAVA",
+				"url" : "api/test_java.jsp",
+				"successMsg" : "test JAVA success, suppored by server <b>" + window.location.host + "</b>...",
+				"errorMsg" : "test JAVA failed, not suppored by server <b>" + window.location.host + "</b>...",
+				"callback" : function( json ){
+						
+						try{
+							var jsonObj = JSON.parse( json, function(key, value) {
+//console.log( key, value );
+								return value;
+							});							
+
+							if( jsonObj["testResult"] === "4" ){
+								_vars["supportJAVA"] = true;
+								var msg = this["successMsg"];
+								
+								var n = 0;								
+								for( var key in jsonObj){
+									if( key !== "testResult"){
+										if( n > 0){
+											msg += ", ";
+										} else {
+											msg += "<br>";
+										}
+										msg += key + " : " + jsonObj[key];
+										n++;
+									}
+								}//next
+								
+								_log("<div class='alert alert-success'>" + msg + "</div>");
+							} else {
+console.log( jsonObj);
+								_vars["supportJAVA"] = false;
+								var msg = this["errorMsg"];
+								_log("<div class='alert alert-danger'>" + msg + "</div>");
+							}
+							
+						} catch(error) {
+							_vars["supportJAVA"] = false;
+							var msg = this["errorMsg"];
+							_log("<div class='alert alert-danger'>" + msg + "</div>");
+						}//end catch
+						
+					}//end callback
+				}, //end test
+				
+				{
 				"name" : "checkMySQL",
 				"url" : "api/test_mysql.php",
+				"urlAltJava" : "api/test_mysql.jsp",
 				"successMsg" : "test local MySQL success...",
 				"errorMsg" : "test local MySQL failed, cannot connect to database server...",
 				"callback" : function(res){
@@ -73,10 +142,48 @@ var _notes = function ( opt ){
 					
 					}//end callback
 				}, //end test
+				
+				// {
+				// "name" : "checkMySQL_java",
+				// "url" : "api/test_mysql.jsp",
+				// "successMsg" : "test local MySQL success...",
+				// "errorMsg" : "test local MySQL failed, cannot connect to database server...",
+				// "callback" : function(res){
+// //console.log(res, typeof res);					
+						
+						// _vars["supportMySQL_java"] = false;
+						// if( typeof res !== "string"){
+							// var msg = this["errorMsg"];
+							// _log("<div class='alert alert-danger'>" + msg + "</div>");
+							// return;
+						// }
 
+						// parseLog({
+							// "successMsg" : this["successMsg"],
+							// "errorMsg" : this["errorMsg"],
+							// "jsonLog" : res,
+							// "onSuccess" : function(){
+								// _vars["supportMySQL_java"] = true;
+								// var msg = this["successMsg"];
+								// _log("<div class='alert alert-success'>" + msg + "</div>");
+							// },
+							// "onError" : function( errorCode  ){
+// console.log(errorCode);
+								// var msg = this["errorMsg"];
+								// msg += ", "+errorCode;
+								// _log("<div class='alert alert-danger'>" + msg + "</div>");
+							// }//,
+							// //"callback" : function(){
+							// //}//end callback
+						// });	
+					
+					// }//end callback
+				// } //end test
+//,
 				{
 				"name" : "checkPostgreSQL",
 				"url" : "api/test_postgresql.php",
+				"urlAltJava" : "api/test_postgresql.jsp",
 				"successMsg" : "test local PostgreSQL success...",
 				"errorMsg" : "test local PostgreSQL failed, cannot connect to database server...",
 				"callback" : function(res){
@@ -108,29 +215,8 @@ var _notes = function ( opt ){
 						});	
 					
 					}//end callback
-				}, //end test
-
-				{
-				"name" : "checkASPX",
-				"url" : "api/test.aspx",
-				"successMsg" : "test ASPX success, suppored by server <b>" + window.location.host + "</b>...",
-				"errorMsg" : "test ASPX failed, ASP.NET not suppored by server <b>" + window.location.host + "</b>...",
-				"callback" : function(res){
-					
-						_vars["supportASPX"] = false;
-						if( res[0] === "4" ){
-							
-							_vars["supportASPX"] = true;
-
-							var msg = this["successMsg"];
-							_log("<div class='alert alert-success'>" + msg + "</div>");
-						} else {
-							var msg = this["errorMsg"];
-							_log("<div class='alert alert-danger'>" + msg + "</div>");
-						}
-					}//end callback
-				}, //end test
-				
+				} //end test
+,
 				{
 				"name" : "checkMSSQL",
 				"url" : "api/test_mssql.aspx",
@@ -152,61 +238,6 @@ var _notes = function ( opt ){
 //console.log(errorCode);
 								var msg = this["errorMsg"];
 								msg += ", error code: "+errorCode;
-								_log("<div class='alert alert-danger'>" + msg + "</div>");
-							}//,
-							//"callback" : function(){
-							//}//end callback
-						});	
-					
-					}//end callback
-				}, //end test
-
-				{
-				"name" : "checkJAVA",
-				"url" : "api/test_java.jsp",
-				"successMsg" : "test JAVA success, suppored by server <b>" + window.location.host + "</b>...",
-				"errorMsg" : "test JAVA failed, not suppored by server <b>" + window.location.host + "</b>...",
-				"callback" : function(res){
-//console.log("res", res.charAt(0) );
-						if( res[0] === "4" ){
-							_vars["supportJAVA"] = true;
-							var msg = this["successMsg"];
-							_log("<div class='alert alert-success'>" + msg + "</div>");
-						} else {
-							_vars["supportJAVA"] = false;
-							var msg = this["errorMsg"];
-							_log("<div class='alert alert-danger'>" + msg + "</div>");
-						}
-					}//end callback
-				}, //end test
-				{
-				"name" : "checkMySQL_java",
-				"url" : "api/test_mysql.jsp",
-				"successMsg" : "test local MySQL success...",
-				"errorMsg" : "test local MySQL failed, cannot connect to database server...",
-				"callback" : function(res){
-console.log(res, typeof res);					
-						
-						_vars["supportMySQL_java"] = false;
-						if( typeof res !== "string"){
-							var msg = this["errorMsg"];
-							_log("<div class='alert alert-danger'>" + msg + "</div>");
-							return;
-						}
-
-						parseLog({
-							"successMsg" : this["successMsg"],
-							"errorMsg" : this["errorMsg"],
-							"jsonLog" : res,
-							"onSuccess" : function(){
-								_vars["supportMySQL_java"] = true;
-								var msg = this["successMsg"];
-								_log("<div class='alert alert-success'>" + msg + "</div>");
-							},
-							"onError" : function( errorCode  ){
-console.log(errorCode);
-								var msg = this["errorMsg"];
-								msg += ", "+errorCode;
 								_log("<div class='alert alert-danger'>" + msg + "</div>");
 							}//,
 							//"callback" : function(){
@@ -264,6 +295,7 @@ console.log(errorCode);
 		defineEvents();
 		var startNumTest = 0;
 		testServer( startNumTest );
+		//testServerMod();
 	};
 
 	function _getTpl( id ){
@@ -279,25 +311,25 @@ console.log(errorCode);
 		//ADD NEW NOTE
 		document.forms["form_message"].onsubmit = function(e){  
 //console.log("Submit form", e, this);
-			if( _vars["supportPHP"] ){
-				checkForm({
-					"form" : this, 
-					"modalWindowId" : "#newModal",
-					"action" : "save_note"
-				});
-			} else {
-				//_error("errorPHP");
+
+			if( !_vars["supportPHP"] &&
+					!_vars["supportASPX"] &&
+						!_vars["supportJAVA"]){
+				return false;
 			}
 			
-			if( _vars["supportASPX"] ){
-				checkForm({
-					"form" : this, 
-					"modalWindowId" : "#newModal",
-					"action" : "save_note"
-				});
-			} else {
-				//_error("errorASPX");
+			if( !_vars["supportMySQL"] &&
+					!_vars["supportPostgreSQL"] &&
+						!_vars["supportMSSQL"] &&
+							!_vars["supportMySQL_java"]){
+				return false;
 			}
+			
+			checkForm({
+				"form" : this, 
+				"modalWindowId" : "#newModal",
+				"action" : "save_note"
+			});
 			
 			return false;
 		};//end event
@@ -365,25 +397,25 @@ console.log(errorCode);
 	// var msg = "<p>error in form..</p>";
 	// _log("<div class='alert alert-warning'>" + msg + "</div>");
 			// }	
-			if( _vars["supportPHP"] ){
-				checkForm({
-					"form" : this, 
-					"modalWindowId" : "#editModal",
-					"action" : "edit_note"
-				});
-			} else {
-				
-				if( _vars["supportASPX"] ){
-					if( _vars["supportMSSQL"] ){
-						checkForm({
-							"form" : this, 
-							"modalWindowId" : "#editModal",
-							"action" : "edit_note"
-						});
-					}
-				}
-
+			
+			if( !_vars["supportPHP"] &&
+					!_vars["supportASPX"] &&
+						!_vars["supportJAVA"]){
+				return false;
 			}
+			
+			if( !_vars["supportMySQL"] &&
+					!_vars["supportPostgreSQL"] &&
+						!_vars["supportMSSQL"] &&
+							!_vars["supportMySQL_java"]){
+				return false;
+			}
+			
+			checkForm({
+				"form" : this, 
+				"modalWindowId" : "#editModal",
+				"action" : "edit_note"
+			});
 			
 			return false;
 		});//end event
@@ -392,14 +424,19 @@ console.log(errorCode);
 		//UPLOAD
 		document.forms["form_import"].onsubmit = function(e) {
 			e.preventDefault();
-			if( _vars["supportPHP"] ){
-				_upload( document.forms["form_import"] );
-			} else {
-				//_error("errorPHP");
+			if( !_vars["supportPHP"] &&
+					!_vars["supportASPX"] &&
+						!_vars["supportJAVA"]){
+				return false;
 			}
-			if( _vars["supportASPX"] ){
-				_upload( document.forms["form_import"] );
+			
+			if( !_vars["supportMySQL"] &&
+					!_vars["supportPostgreSQL"] &&
+						!_vars["supportMSSQL"] &&
+							!_vars["supportMySQL_java"]){
+				return false;
 			}
+			_upload( document.forms["form_import"] );
 		};//end event
 /*
     $("form[name='form_import']").submit(function(e) {
@@ -554,17 +591,21 @@ console.log(errorCode);
 					return;
 				}
 
-				if( _vars["supportPHP"]){
-					var url= _vars["exportUrl"];
-					window.location.assign(url);
+				if( !_vars["supportPHP"] &&
+						!_vars["supportASPX"] &&
+							!_vars["supportJAVA"]){
+					return false;
 				}
 				
-				//if( _vars["supportASPX"] ){
-					if( _vars["supportMSSQL"] ){
-						var url= _vars["exportUrl"];
-						window.location.assign(url);
-					}
-				//}
+				if( !_vars["supportMySQL"] &&
+						!_vars["supportPostgreSQL"] &&
+							!_vars["supportMSSQL"] &&
+								!_vars["supportMySQL_java"]){
+					return false;
+				}
+				
+				var url= _vars["exportUrl"];
+				window.location.assign(url);
 
 			}//end event
 		}
@@ -756,7 +797,6 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 //filter
 
 			text = text
-			//.replace(/'/g, "&#39;")
 			//.replace(/\n/g, "\\u000A")//replace end of line
 			//.replace(/\r/g, "\\r")//replace end of line (for correct JSON parsing)
 			//.replace(/\n/g, "\\n")//replace end of line (for correct JSON parsing)
@@ -771,7 +811,8 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 			.replace(/&/g, "&amp;")
 			.replace(/"/g, "&quot;")
 			.replace(/\</g, "&lt;")
-			.replace(/\>/g, "&gt;");
+			.replace(/\>/g, "&gt;")
+			.replace(/'/g, "&#39;");
 
 			formValues["textMessage"] = text;
 		}
@@ -893,6 +934,17 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 	function testServer( numTest ){
 
 		var test = _vars["tests"][ numTest ];
+//change tst url
+if( test["name"] === "checkMySQL"){
+	if( _vars["supportJAVA"] ){
+		test["url"] = test["urlAltJava"];
+	}
+}
+if( test["name"] === "checkPostgreSQL"){
+	if( _vars["supportJAVA"] ){
+		test["url"] = test["urlAltJava"];
+	}
+}
 		runAjax({
 			"requestMethod" : "GET", 
 			"url" : test["url"], 
@@ -909,6 +961,7 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 			} 
 			numTest++;
 			if( numTest < _vars["tests"].length ){
+//console.log(numTest );				
 			//if( numTest < 2 ){
 				testServer( numTest );
 			} else {
@@ -942,10 +995,16 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 				}
 
 				if( _vars["supportJAVA"] ){
-					if( _vars["supportMySQL_java"] ){
+					if( _vars["supportMySQL"] ){
 						noSupport = false;
 						_vars["requestUrl"] = "notes-serv";
 						_vars["exportUrl"] = "notes-serv?action=export_notes";
+						loadNotes();
+					}
+					if( _vars["supportPostgreSQL"] ){
+						noSupport = false;
+						_vars["requestUrl"] = "notes-serv-postgres";
+						_vars["exportUrl"] = "notes-serv-postgres?action=export_notes";
 						loadNotes();
 					}
 				}
@@ -958,6 +1017,36 @@ _log("<div class='alert alert-warning'>" + msg + "</div>");
 		}//end _postReq()
 	}//end testServer()
 
+	// function testServerMod(){
+		
+		// //run test PHP
+		// for( var n = 0; n < _vars["tests"].length; n++){
+			// var test = _vars["tests"][ n ];
+			// if( test["name"] === "checkPHP"){
+				// runAjax({
+					// "requestMethod" : "GET", 
+					// "url" : test["url"], 
+					// "onError" : _postReq,
+					// "callback": _postReq
+				// });
+			// }
+// // checkMySQL  notes.js:1001:1
+// // checkPostgreSQL  notes.js:1001:1
+// // checkASPX  notes.js:1001:1
+// // checkMSSQL  notes.js:1001:1
+// // checkJAVA  notes.js:1001:1
+// // checkMySQL_java
+		// }//next
+		
+		// function _postReq( data ){
+// console.log(data, typeof data, data.length);
+			// // if( typeof test["callback"] === "function"){
+				// // test["callback"]( data );
+			// // } 
+		// }//end _postReq()
+		
+	// }//end testServerMod()
+	
 	function loadNotes(){
 //console.log( _vars["templates"] );
 		_vars["messagesList"].innerHTML = "";
@@ -1215,34 +1304,25 @@ console.log("error in __filter()");
 			// window.location = window.location + "?action="+p["action"];
 			// return;
 		// }
-		if( _vars["supportPHP"] ){
-			runAjax( {
-				"requestMethod" : "GET", 
-				"url" : _vars["requestUrl"], 
-				"params" : p,
-				"callback": /*function( log ){
-	var msg = "<p>"+log+"</p>";
-	_log("<div class='alert alert-success'>" + msg + "</div>");
-					loadNotes();
-					if( typeof callback === "function"){
-						callback();
-					}
-				}//end callback()*/ _postFunc
-			});
-		} else {
-			//_error("errorPHP");
+		
+		if( !_vars["supportPHP"] &&
+				!_vars["supportASPX"] &&
+					!_vars["supportJAVA"]){
+			return false;
 		}
 		
-		if( _vars["supportASPX"] ){
-			runAjax( {
-				"requestMethod" : "GET", 
-				"url" : _vars["requestUrl"], 
-				"params" : p,
-				"callback": _postFunc
-			});
-		} else {
-			//_error("errorASPX");
+		if( !_vars["supportMySQL"] &&
+				!_vars["supportPostgreSQL"] &&
+					!_vars["supportMSSQL"] &&
+						!_vars["supportMySQL_java"]){
+			return false;
 		}
+		runAjax( {
+			"requestMethod" : "GET", 
+			"url" : _vars["requestUrl"], 
+			"params" : p,
+			"callback": _postFunc
+		});
 		
 		function _postFunc( data ){
 			parseLog({
@@ -1293,18 +1373,21 @@ console.log(msg);
 				var jsonObj = jsonArr[n];
 //console.log( jsonObj );
 
-				if( jsonObj["message"] && jsonObj["message"].length > 0 ){
-					var msg_ = "<p>" +jsonObj["message"]+ "</p>";
-					//_messagesStr += msg_;
-					_log("<div class='alert alert-info'>" + msg_ + "</div>");
-				}
-				
 				if( jsonObj["error_code"] && jsonObj["error_code"].length > 0 ){
 					errorCode = jsonObj["error_code"];
-					//if( errorCode !== "0"){
-						//var _msg = "<p>error code: " +errorCode+ "</p>";
-						//_log("<div class='alert alert-danger'>" + _msg + "</div>");
-					//}
+					if( errorCode !== "0"){
+						var _msg = "error code: " +errorCode+ ", ";
+						_msg += jsonObj["message"];
+						_log("<div class='alert alert-danger'>" + _msg + "</div>");
+					}
+				} else {
+					
+					if( jsonObj["message"] && jsonObj["message"].length > 0 ){
+						var msg_ = "<p>" +jsonObj["message"]+ "</p>";
+						//_messagesStr += msg_;
+						_log("<div class='alert alert-info'><small>" + msg_ + "</small></div>");
+					}
+					
 				}
 				
 			}//next
@@ -1345,7 +1428,7 @@ console.log(msg);
 	return{
 		vars : _vars,
 		init:	function(){ 
-			return _init(); 
+			return _init();
 		}
 	};
 	
